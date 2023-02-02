@@ -1,9 +1,10 @@
 import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
+import pagination from './pagination.js';
 
 let productModal = null;
 let delProductModal = null;
 
-createApp({
+const app = createApp({
     data() {
       return {
         apiUrl: 'https://vue3-course-api.hexschool.io/v2',
@@ -11,6 +12,7 @@ createApp({
         isNew: false,
         products: [],
         tempProduct: {},
+        page: {},
       }
     },
     methods: {
@@ -25,11 +27,13 @@ createApp({
                     window.location = 'login.html';
                 })
             },
-        getData() {
-            const url = `${this.apiUrl}/api/${this.apiPath}/admin/products/all`;
+        getData(page = 1) {
+            const url = `${this.apiUrl}/api/${this.apiPath}/admin/products/?page=${page}`;
             axios.get(url)
                 .then((response) => {
                     this.products = response.data.products;
+                    this.page = response.data.pagination;
+                    console.log(this.products);
                 })
                 .catch((error) => {
                     alert(error.response.data.message);
@@ -94,6 +98,9 @@ createApp({
             
         }
     },
+    components:{
+        pagination,
+    },
     mounted() {
 
         productModal = new bootstrap.Modal(document.getElementById('productModal'), {
@@ -108,4 +115,11 @@ createApp({
         axios.defaults.headers.common['Authorization'] = token;
         this.checkLogin()
     },
-  }).mount('#app');
+  })
+
+app.component('product-modal',{
+    props:['isNew', 'tempProduct', 'updateItem', 'createImages'],
+    template:'#product-modal-template',
+})
+
+app.mount('#app');
